@@ -1,0 +1,8 @@
+{
+  "name": "cwp-09",
+  "author": "Vlad Senyuk",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "bluebird": "^3.7.2"
+  }
+}
