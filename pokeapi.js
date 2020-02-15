@@ -1,5 +1,6 @@
 const Promise = require('bluebird');
 const axios = require('axios');
+
 //get pokemon by id=42
 axios.get('https://pokeapi.co/api/v2/pokemon/42')
   .then(function (response) {
@@ -7,52 +8,20 @@ axios.get('https://pokeapi.co/api/v2/pokemon/42')
   })
   .catch(function (error) {
     console.log(error);
-  })
-  .then(function () {
   });
 
-//get 30 pokemons by Promise.all
-let p1 = new Promise((resolve, reject) =>{
-  for (var i = 1; i < 11; i++) {
-    axios.get(`https://pokeapi.co/api/v2/pokemon/${i}`)
-      .then(function (response) {
-        console.log(`1-Name: ${response.data.name}`);
-      })
-      .catch(function (error) {
-        console.log(error);
-      })
-      .then(function () {
-      });
+//use Promise.all
+async function getPokemons(idFrom, idTo){
+  let pokemons = [];
+  for (var i = idFrom; i < idTo; i++) {
+    const pokemon = await axios.get(`https://pokeapi.co/api/v2/pokemon/${i}`);
+    pokemons.push(pokemon.data.name);
   }
-});
+  return pokemons;
+}
 
-
-let p2 = new Promise((resolve, reject) =>{
-  for (var i = 11; i < 21; i++) {
-    axios.get(`https://pokeapi.co/api/v2/pokemon/${i}`)
-      .then(function (response) {
-        console.log(`2-Name: ${response.data.name}`);
-      })
-      .catch(function (error) {
-        console.log(error);
-      })
-      .then(function () {
-      });
-  }
-});
-
-let p3 = new Promise((resolve, reject) =>{
-  for (var i = 21; i < 31; i++) {
-    axios.get(`https://pokeapi.co/api/v2/pokemon/${i}`)
-      .then(function (response) {
-        console.log(`3-Name: ${response.data.name}`);
-      })
-      .catch(function (error) {
-        console.log(error);
-      })
-      .then(function () {
-      });
-  }
-});
-
-Promise.all([p1, p2, p3]).then(function() {});
+Promise.all([getPokemons(1, 11), getPokemons(11, 21), getPokemons(21, 31)]).then(axios.spread(function (first, second, third) {
+  console.log(first);
+  console.log(second);
+  console.log(third);
+}));
