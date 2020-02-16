@@ -3,25 +3,39 @@ const axios = require('axios');
 
 //get pokemon by id=42
 axios.get('https://pokeapi.co/api/v2/pokemon/42')
-  .then(function (response) {
+  .then((response) => {
     console.log(`Name: ${response.data.name} Height: ${response.data.height} Weight: ${response.data.weight}`);
   })
-  .catch(function (error) {
+  .catch((error) => {
     console.log(error);
   });
 
 //use Promise.all
-async function getPokemons(idFrom, idTo){
-  let pokemons = [];
-  for (var i = idFrom; i < idTo; i++) {
-    const pokemon = await axios.get(`https://pokeapi.co/api/v2/pokemon/${i}`);
-    pokemons.push(pokemon.data.name);
-  }
-  return pokemons;
+const getPromise = (i) => {
+    return new Promise((resolve, reject) => {
+      const pokemon = axios.get(`https://pokeapi.co/api/v2/pokemon/${i}`);
+      resolve(pokemon);
+    });
 }
 
-Promise.all([getPokemons(1, 11), getPokemons(11, 21), getPokemons(21, 31)]).then(axios.spread(function (first, second, third) {
-  console.log(first);
-  console.log(second);
-  console.log(third);
-}));
+let promises = [];
+
+for (let i = 1; i < 4; i++) {
+  let pokemons = [];
+  for (let j = 1; j < 11; j++) {
+    pokemons.push(getPromise(i * j));
+  }
+  promises.push(pokemons);
+}
+
+Promise.all(promises.map(Promise.all.bind(Promise)))
+    .then((result) => {
+      result.forEach((item, i) => {
+        item.forEach((p, j) => {
+          console.log(`${i}-${j}: ${p.data.name}`);
+        });
+      });
+    })
+    .catch(e => {
+      console.log('error: ', e);
+    });
