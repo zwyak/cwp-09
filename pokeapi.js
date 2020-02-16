@@ -1,9 +1,16 @@
 const Promise = require('bluebird');
 const axios = require('axios');
 
-const getPromise = (url, i) => {
+const getPromise = (url, id) => {
     return new Promise((resolve, reject) => {
-      const pokemon = axios.get(`${url}${i}`);
+      const pokemon = axios.get(`${url}${id}`);
+      resolve(pokemon);
+    });
+}
+
+const getPromiseLimit = (url, offset, limit) => {
+    return new Promise((resolve, reject) => {
+      const pokemon = axios.get(`${url}?offset=${offset}&limit=${limit}`);
       resolve(pokemon);
     });
 }
@@ -18,21 +25,13 @@ axios.get('https://pokeapi.co/api/v2/pokemon/42')
   });
 
 //use Promise.all
-let promises = [];
-
-for (let i = 1; i < 4; i++) {
-  let pokemons = [];
-  for (let j = 1; j < 11; j++) {
-    pokemons.push(getPromise('https://pokeapi.co/api/v2/pokemon/', i * j));
-  }
-  promises.push(pokemons);
-}
-
-Promise.all(promises.map(Promise.all.bind(Promise)))
-    .then((result) => {
-      result.forEach((item, i) => {
-        item.forEach((p, j) => {
-          console.log(`ALL ${i}-${j}: ${p.data.name}`);
+Promise.all([getPromiseLimit('https://pokeapi.co/api/v2/pokemon/', 0, 10),
+             getPromiseLimit('https://pokeapi.co/api/v2/pokemon/', 10, 10),
+             getPromiseLimit('https://pokeapi.co/api/v2/pokemon/', 20, 10)])
+    .then((res) => {
+      res.forEach((item, i) => {
+        item.data.results.forEach((p, j) => {
+          console.log(`${i+1}-${j+1} : ${p.name}`);
         });
       });
     })
@@ -51,25 +50,21 @@ Promise.any([getPromise('https://pokeapi.co/api/v2/pokemon/', 1), getPromise('ht
       });
 
 //use Promise.props
-let poks = [];
-let items = [];
-let locations = [];
+Promise.props({pokemons: getPromiseLimit('https://pokeapi.co/api/v2/pokemon/', 0, 10),
+              items: getPromiseLimit('https://pokeapi.co/api/v2/item/', 0, 10),
+              locations: getPromiseLimit('https://pokeapi.co/api/v2/location/', 0, 10)})
+      .then((res) =>{
+        res.pokemons.data.results.forEach((item, i) => {
+          console.log(`Props pokemons: ${i+1} - ${item.name}`);
+        });
 
-for (var i = 1; i < 11; i++){
-  poks.push(getPromise('https://pokeapi.co/api/v2/pokemon/', i));
-}
+        res.items.data.results.forEach((item, i) => {
+          console.log(`Props items: ${i+1} - ${item.name}`);
+        });
 
-for (var i = 1; i < 11; i++){
-  items.push(getPromise('https://pokeapi.co/api/v2/item/', i));
-}
-
-for (var i = 1; i < 11; i++){
-  locations.push(getPromise('https://pokeapi.co/api/v2/location/', i));
-}
-
-Promise.props({pokemons: poks[0], items: items[0], locations: locations[0]})
-      .then((result) =>{
-        console.log(result.pokemons, result.items, result.locations);
+        res.locations.data.results.forEach((item, i) => {
+          console.log(`Props locations: ${i+1} - ${item.name}`);
+        });
       })
       .catch(e => {
         console.log('error: ', e);
