@@ -41,7 +41,9 @@ Promise.all([getPromiseLimit('https://pokeapi.co/api/v2/pokemon/', 0, 10),
 
 //use Promise.any
 
-Promise.any([getPromise('https://pokeapi.co/api/v2/pokemon/', 1), getPromise('https://pokeapi.co/api/v2/pokemon/', 4), getPromise('https://pokeapi.co/api/v2/pokemon/', 7)])
+Promise.any([getPromise('https://pokeapi.co/api/v2/pokemon/', 1),
+            getPromise('https://pokeapi.co/api/v2/pokemon/', 4),
+            getPromise('https://pokeapi.co/api/v2/pokemon/', 7)])
       .then((result) =>{
         console.log(`ANY ${result.data.name}`);
       })
@@ -69,3 +71,22 @@ Promise.props({pokemons: getPromiseLimit('https://pokeapi.co/api/v2/pokemon/', 0
       .catch(e => {
         console.log('error: ', e);
       });
+
+//use Promise.map
+let berries = [];
+axios.get('https://pokeapi.co/api/v2/berry/?offset=0&limit=4')
+  .then((res) => {
+    berries = res.data.results;
+  })
+  .then(() =>{
+    Promise.map(berries, (berry) => {
+      return axios.get(berry.url);
+    }).then( (res) => {
+      res.forEach((item, i) => {
+        console.log(`Berry name: ${item.data.name}, Berry size: ${item.data.size}`);
+      });
+    });
+  })
+  .catch((error) => {
+    console.log(error);
+  });
