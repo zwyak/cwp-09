@@ -40,7 +40,6 @@ Promise.all([getPromiseLimit('https://pokeapi.co/api/v2/pokemon/', 0, 10),
     });
 
 //use Promise.any
-
 Promise.any([getPromise('https://pokeapi.co/api/v2/pokemon/', 1),
             getPromise('https://pokeapi.co/api/v2/pokemon/', 4),
             getPromise('https://pokeapi.co/api/v2/pokemon/', 7)])
