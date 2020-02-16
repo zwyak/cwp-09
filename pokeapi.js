@@ -32,10 +32,17 @@ Promise.all(promises.map(Promise.all.bind(Promise)))
     .then((result) => {
       result.forEach((item, i) => {
         item.forEach((p, j) => {
-          console.log(`${i}-${j}: ${p.data.name}`);
+          console.log(`ALL ${i}-${j}: ${p.data.name}`);
         });
       });
     })
     .catch(e => {
       console.log('error: ', e);
     });
+
+//use Promise.any
+
+Promise.any([getPromise(1), getPromise(4), getPromise(7)])
+      .then((result) =>{
+        console.log(`ANY ${result.data.name}`);
+      });
